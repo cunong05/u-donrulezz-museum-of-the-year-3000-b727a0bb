@@ -12,9 +12,13 @@ exactly the validated text. The gate is:
   * valid UTF-8, and not only whitespace.
 
 Usage:
-    python3 main.py
+    python3 main.py [--out PATH] [--quiet]
+
+--out defaults to /output/entry.txt; --quiet suppresses the
+character-count note on stderr.
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -48,9 +52,17 @@ def write_entry(entry, out_path):
     return validate(written)
 
 
-def main():
-    entry = write_entry(validate(ENTRY), DEFAULT_OUT)
-    print(f"entry: {len(entry)} characters -> {DEFAULT_OUT}", file=sys.stderr)
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Write the Museum of the Year 3000 entry.")
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT,
+                        help="output file (default: /output/entry.txt)")
+    parser.add_argument("--quiet", action="store_true",
+                        help="suppress the character-count note")
+    args = parser.parse_args(argv)
+
+    entry = write_entry(validate(ENTRY), args.out)
+    if not args.quiet:
+        print(f"entry: {len(entry)} characters -> {args.out}", file=sys.stderr)
     print(entry)
     return 0
 
